@@ -1,14 +1,23 @@
-# Build stage
-FROM maven:3.9-eclipse-temurin-21 AS build
 
-COPY . .
+# Build Stage
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-RUN mvn clean package -DskipTests
+WORKDIR /app
 
-# Package stage
-FROM eclipse-temurin:21-jdk
+COPY pom.xml .
 
-COPY --from=build /target/your-build.jar app.jar
+RUN mvn -B dependency:go-offline
+
+COPY src ./src
+
+RUN mvn -U -B clean package -DskipTests
+
+# Run Stage
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
