@@ -4,14 +4,12 @@ FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /app
 
+COPY settings.xml /root/.m2/settings.xml
+
 COPY pom.xml .
 COPY src ./src
 
-RUN for i in 1 2 3; do \
-    mvn -B clean package -DskipTests && exit 0; \
-    echo "Build failed. Retrying in 30 seconds..."; \
-    sleep 30; \
-    done; exit 1
+RUN mvn -B -U -s /root/.m2/settings.xml clean package -DskipTests
 
 # Run Stage
 FROM eclipse-temurin:21-jre
